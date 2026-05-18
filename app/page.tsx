@@ -16,14 +16,12 @@ export default function Home() {
   const { activeView } = useApp();
 
   return (
-    <main className="min-h-screen bg-[#FDFBFB] max-w-md mx-auto shadow-xl border-x border-zinc-100 relative overflow-x-hidden">
+    <main className="min-h-screen bg-[#FDFBFB] max-w-md mx-auto shadow-xl border-x border-zinc-100 relative">
       
-      {/* HEADER GLOBAL: Agora ele fica fixo no topo de todas as telas */}
-      <Header />
+      {activeView !== 'ACCOUNT' && <Header />}
 
-      {/* HOME VIEW */}
       {activeView === 'HOME' && (
-        <div className="animate-in fade-in duration-500 pb-24">
+        <div className="animate-in fade-in duration-500 pt-16 pb-24 overflow-x-hidden">
           <Hero />
           <Categories />
           <ProductGrid />
@@ -31,28 +29,24 @@ export default function Home() {
         </div>
       )}
 
-      {/* CATEGORIES VIEW */}
       {activeView === 'CATEGORIES' && (
-        <div className="pb-24">
+        <div className="pt-16 pb-24 overflow-x-hidden">
           <CategoryView />
         </div>
       )}
 
-      {/* ANATOMY VIEW */}
       {activeView === 'ANATOMY' && (
-        <div className="pb-24">
+        <div className="pt-16 pb-24 overflow-x-hidden">
           <AnatomyView />
         </div>
       )}
 
-      {/* ACCOUNT VIEW */}
       {activeView === 'ACCOUNT' && (
         <div className="pb-24">
           <LoginView />
         </div>
       )}
 
-      {/* Componentes de Navegação e Modais Globais */}
       <BottomNav />
       <SidebarMenu />
       <CartDrawer />
