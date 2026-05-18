@@ -1,3 +1,5 @@
+"use client";
+import { useApp } from "@/context/AppContext";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import Categories from "@/components/Categories";
@@ -6,16 +8,51 @@ import Features from "@/components/Features";
 import BottomNav from "@/components/BottomNav";
 import SidebarMenu from "@/components/SidebarMenu";
 import CartDrawer from "@/components/CartDrawer";
+import AnatomyView from "@/components/AnatomyView";
+import CategoryView from "@/components/CategoryView";
+import LoginView from "@/components/LoginView";
 
 export default function Home() {
+  const { activeView } = useApp();
+
   return (
-    // Removido o conflito de overflow e mantido apenas a centralização estilo mobile
-    <main className="min-h-screen bg-[#FDFBFB] pb-24 max-w-md mx-auto shadow-xl border-x border-zinc-100">
+    <main className="min-h-screen bg-[#FDFBFB] max-w-md mx-auto shadow-xl border-x border-zinc-100 relative overflow-x-hidden">
+      
+      {/* HEADER GLOBAL: Agora ele fica fixo no topo de todas as telas */}
       <Header />
-      <Hero />
-      <Categories />
-      <ProductGrid />
-      <Features />
+
+      {/* HOME VIEW */}
+      {activeView === 'HOME' && (
+        <div className="animate-in fade-in duration-500 pb-24">
+          <Hero />
+          <Categories />
+          <ProductGrid />
+          <Features />
+        </div>
+      )}
+
+      {/* CATEGORIES VIEW */}
+      {activeView === 'CATEGORIES' && (
+        <div className="pb-24">
+          <CategoryView />
+        </div>
+      )}
+
+      {/* ANATOMY VIEW */}
+      {activeView === 'ANATOMY' && (
+        <div className="pb-24">
+          <AnatomyView />
+        </div>
+      )}
+
+      {/* ACCOUNT VIEW */}
+      {activeView === 'ACCOUNT' && (
+        <div className="pb-24">
+          <LoginView />
+        </div>
+      )}
+
+      {/* Componentes de Navegação e Modais Globais */}
       <BottomNav />
       <SidebarMenu />
       <CartDrawer />

@@ -1,5 +1,8 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, ReactNode, Dispatch, SetStateAction } from "react";
+
+// Tipagem para suportar os filtros avançados
+export type ViewType = 'HOME' | 'CATEGORIES' | 'ANATOMY' | 'ACCOUNT';
 
 interface Product {
   id: number;
@@ -7,69 +10,61 @@ interface Product {
   material: string;
   price: number;
   image: string;
-}
-
-interface CartItem extends Product {
-  quantity: number;
+  bodyPart: string;
 }
 
 interface AppContextType {
-  cart: CartItem[];
-  addToCart: (product: Product) => void;
-  removeFromCart: (id: number) => void;
+  activeView: ViewType;
+  setActiveView: Dispatch<SetStateAction<ViewType>>;
+  selectedMaterial: string;
+  setSelectedMaterial: Dispatch<SetStateAction<string>>;
+  selectedBodyPart: string;
+  setSelectedBodyPart: Dispatch<SetStateAction<string>>;
+  cart: any[];
+  addToCart: (p: any) => void;
   isMenuOpen: boolean;
-  setIsMenuOpen: (open: boolean) => void;
+  setIsMenuOpen: Dispatch<SetStateAction<boolean>>;
   isCartOpen: boolean;
-  setIsCartOpen: (open: boolean) => void;
-  selectedCategory: string;
-  setSelectedCategory: (category: string) => void;
+  setIsCartOpen: Dispatch<SetStateAction<boolean>>;
+  selectedCategory: string;                 // Prometido na interface
+  setSelectedCategory: Dispatch<SetStateAction<string>>; // Ajustado para seguir o padrão Dispatch
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [activeView, setActiveView] = useState<ViewType>('HOME');
+  const [selectedMaterial, setSelectedMaterial] = useState("Todos");
+  const [selectedBodyPart, setSelectedBodyPart] = useState("Todos");
+  const [cart, setCart] = useState<any[]>([]);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [selectedCategory, setSelectedCategory] = useState("Todos"); // "Todos", "Ouro 18k", "Titânio", "Aço Inox"
+  
+  // CORREÇÃO: Criando os estados que estavam faltando no Provider
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
 
-  const addToCart = (product: Product) => {
-    setCart((prev) => {
-      const existing = prev.find((item) => item.id === product.id);
-      if (existing) {
-        return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
-      }
-      return [...prev, { ...product, quantity: 1 }];
-    });
-  };
-
-  const removeFromCart = (id: number) => {
-    setCart((prev) => prev.filter((item) => item.id !== id));
+  const addToCart = (product: any) => {
+    setCart(prev => [...prev, { ...product, quantity: 1 }]);
   };
 
   return (
-    <AppContext.Provider
-      value={{
-        cart,
-        addToCart,
-        removeFromCart,
-        isMenuOpen,
-        setIsMenuOpen,
-        isCartOpen,
-        setIsCartOpen,
-        selectedCategory,
-        setSelectedCategory,
-      }}
-    >
+    <AppContext.Provider value={{ 
+      activeView, setActiveView, 
+      selectedMaterial, setSelectedMaterial,
+      selectedBodyPart, setSelectedBodyPart, 
+      cart, addToCart,
+      isMenuOpen, setIsMenuOpen, 
+      isCartOpen, setIsCartOpen, 
+      selectedCategory,    // CORREÇÃO: Passando o estado pro contexto
+      setSelectedCategory  // CORREÇÃO: Passando a função de alteração pro contexto
+    }}>
       {children}
     </AppContext.Provider>
   );
 }
 
-export function useApp() {
+export const useApp = () => {
   const context = useContext(AppContext);
-  if (!context) throw new Error("useApp deve ser usado dentro de um AppProvider");
+  if (!context) throw new Error("useApp must be used within AppProvider");
   return context;
-}
+};

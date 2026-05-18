@@ -1,24 +1,31 @@
-import { Home, Grid, Heart, User } from "lucide-react";
+"use client";
+import { Home, LayoutGrid, Sparkles, User } from "lucide-react";
+import { useApp, ViewType } from "@/context/AppContext";
 
 export default function BottomNav() {
+  const { activeView, setActiveView } = useApp();
+
+  const navItems: { id: ViewType; label: string; icon: any }[] = [
+    { id: 'HOME', label: 'Início', icon: Home },
+    { id: 'CATEGORIES', label: 'Categorias', icon: LayoutGrid },
+    { id: 'ANATOMY', label: 'Anatomia', icon: Sparkles },
+    { id: 'ACCOUNT', label: 'Conta', icon: User },
+  ];
+
   return (
-    <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 py-2.5 px-6 flex justify-between items-center z-50 max-w-md mx-auto">
-      <button className="flex flex-col items-center text-luxury-pink gap-0.5">
-        <Home size={20} strokeWidth={1.8} />
-        <span className="text-[9px] uppercase font-bold tracking-wider">Início</span>
-      </button>
-      <button className="flex flex-col items-center text-luxury-muted hover:text-luxury-text gap-0.5">
-        <Grid size={20} strokeWidth={1.5} />
-        <span className="text-[9px] uppercase tracking-wider">Categorias</span>
-      </button>
-      <button className="flex flex-col items-center text-luxury-muted hover:text-luxury-text gap-0.5">
-        <Heart size={20} strokeWidth={1.5} />
-        <span className="text-[9px] uppercase tracking-wider">Favoritos</span>
-      </button>
-      <button className="flex flex-col items-center text-luxury-muted hover:text-luxury-text gap-0.5">
-        <User size={20} strokeWidth={1.5} />
-        <span className="text-[9px] uppercase tracking-wider">Conta</span>
-      </button>
+    <div className="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-zinc-100 py-3 px-6 flex justify-between items-center z-50 max-w-md mx-auto shadow-[0_-4px_10px_rgba(0,0,0,0.03)]">
+      {navItems.map((item) => (
+        <button
+          key={item.id}
+          onClick={() => setActiveView(item.id)}
+          className={`flex flex-col items-center gap-1 transition-all ${
+            activeView === item.id ? "text-[#E8A3B3]" : "text-zinc-300"
+          }`}
+        >
+          <item.icon size={22} strokeWidth={activeView === item.id ? 2.5 : 1.5} />
+          <span className="text-[10px] font-bold uppercase tracking-tighter">{item.label}</span>
+        </button>
+      ))}
     </div>
   );
 }
