@@ -7,7 +7,6 @@ export default function BottomNav() {
 
   const navItems: { id: ViewType; label: string; icon: any }[] = [
     { id: 'HOME', label: 'Início', icon: Home },
-    { id: 'CATEGORIES', label: 'Categorias', icon: LayoutGrid },
     { id: 'ANATOMY', label: 'Anatomia', icon: Sparkles },
     { id: 'ACCOUNT', label: 'Conta', icon: User },
   ];

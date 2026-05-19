@@ -29,12 +29,6 @@ export default function Home() {
         </div>
       )}
 
-      {activeView === 'CATEGORIES' && (
-        <div className="pt-16 pb-24 overflow-x-hidden">
-          <CategoryView />
-        </div>
-      )}
-
       {activeView === 'ANATOMY' && (
         <div className="pt-16 pb-24 overflow-x-hidden">
           <AnatomyView />
