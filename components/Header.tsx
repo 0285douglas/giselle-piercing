@@ -7,7 +7,7 @@ export default function Header() {
   const totalItems = cart.reduce((acc, item) => acc + item.quantity, 0);
 
   return (
-    <header className="w-full flex justify-between items-center px-4 py-4 bg-white/80 backdrop-blur-md sticky top-0 z-50 border-b border-zinc-100/50">
+    <header className="w-full max-w-md mx-auto flex justify-between items-center px-4 py-4 bg-white/80 backdrop-blur-md fixed top-0 z-50 border-b border-zinc-100/50">
       <button onClick={() => setIsMenuOpen(true)} className="text-[#1A1A1A] p-1">
         <Menu size={24} strokeWidth={1.2} />
       </button>
