@@ -1,7 +1,10 @@
 package com.gisellepiercing.application.controller;
 
+import com.gisellepiercing.dto.request.ProductRequestDTO;
+import com.gisellepiercing.dto.response.ProductResponseDTO;
 import com.gisellepiercing.model.Product;
-import com.gisellepiercing.service.ProductService;
+import com.gisellepiercing.application.service.ProductService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -30,8 +33,10 @@ public class ProductController {
     }
 
     @PostMapping
-    public ResponseEntity<Product> createProduct(@RequestBody Product product) {
-        return ResponseEntity.status(HttpStatus.CREATED).body(service.createProduct(product));
+    public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO request) {
+        return ResponseEntity
+                .status(HttpStatus.CREATED)
+                .body(service.createProduct(request));
     }
 
     @PutMapping("/{id}")
