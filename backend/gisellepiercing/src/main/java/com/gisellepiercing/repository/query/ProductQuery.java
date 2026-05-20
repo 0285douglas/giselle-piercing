@@ -66,4 +66,36 @@ public class ProductQuery {
         FROM store.materials
         WHERE LOWER(name) = LOWER(:material)
     """;
+
+    public static final String FIND_BY_ID = """
+        SELECT
+            p.id,
+            p.name,
+            p.description,
+            p.price,
+            p.image_url,
+            c.name AS category,
+            m.name AS material
+        FROM store.products p
+        INNER JOIN store.categories c ON c.id = p.category_id
+        INNER JOIN store.materials m ON m.id = p.material_id
+        WHERE p.id = :id
+    """;
+
+    public static final String UPDATE_PRODUCT = """
+        UPDATE store.products
+        SET
+            name = :name,
+            description = :description,
+            price = :price,
+            image_url = :imageUrl,
+            category_id = :categoryId,
+            material_id = :materialId
+        WHERE id = :id
+    """;
+
+    public static final String DELETE_PRODUCT = """
+        DELETE FROM store.products
+        WHERE id = :id
+    """;
 }

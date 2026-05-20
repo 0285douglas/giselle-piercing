@@ -8,6 +8,7 @@ import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public class ProductRepository {
@@ -55,34 +56,58 @@ public class ProductRepository {
     }
 
     public Product save(Product product) {
-        Long categoryId = getCategoryIdByName(product.getCategory());
-
-        Long materialId = getMaterialIdByName(product.getMaterial());
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                         .addValue("name", product.getName())
                         .addValue("description", product.getDescription())
                         .addValue("price", product.getPrice())
                         .addValue("imageUrl", product.getImageUrl())
-                        .addValue("categoryId", categoryId)
-                        .addValue("materialId", materialId);
+                        .addValue("categoryId", Long.parseLong(product.getCategory()))
+                        .addValue("materialId", Long.parseLong(product.getMaterial()));
 
         jdbcTemplate.update(ProductQuery.INSERT_PRODUCT, params);
 
         return product;
     }
 
-    private Long getCategoryIdByName(String category) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                        .addValue("category", category);
+    public Optional<Product> findById(Long id) {
 
-        return jdbcTemplate.queryForObject(ProductQuery.FIND_CATEGORY_ID_BY_NAME, params, Long.class);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", id);
+
+        List<Product> products = jdbcTemplate.query(
+                ProductQuery.FIND_BY_ID,
+                params,
+                productRowMapper
+        );
+
+        return products.stream().findFirst();
     }
 
-    private Long getMaterialIdByName(String material) {
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("material", material);
+    public Product update(Long id, Product product) {
 
-        return jdbcTemplate.queryForObject(ProductQuery.FIND_MATERIAL_ID_BY_NAME, params, Long.class);
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", id)
+                .addValue("name", product.getName())
+                .addValue("description", product.getDescription())
+                .addValue("price", product.getPrice())
+                .addValue("imageUrl", product.getImageUrl())
+                .addValue("categoryId", Long.parseLong(product.getCategory()))
+                .addValue("materialId", Long.parseLong(product.getMaterial()));
+
+        jdbcTemplate.update(ProductQuery.UPDATE_PRODUCT, params);
+
+        product.setId(id);
+
+        return product;
     }
+
+    public void delete(Long id) {
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("id", id);
+
+        jdbcTemplate.update(ProductQuery.DELETE_PRODUCT, params);
+    }
+
+    
 }
