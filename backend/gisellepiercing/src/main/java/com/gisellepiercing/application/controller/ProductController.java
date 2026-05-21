@@ -3,10 +3,11 @@ package com.gisellepiercing.application.controller;
 import com.gisellepiercing.dto.request.ProductRequestDTO;
 import com.gisellepiercing.dto.response.ProductResponseDTO;
 import com.gisellepiercing.model.Product;
-import com.gisellepiercing.application.service.ProductService;
+import com.gisellepiercing.service.ProductService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -32,6 +33,7 @@ public class ProductController {
         return ResponseEntity.ok(service.findById(id));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PostMapping
     public ResponseEntity<ProductResponseDTO> createProduct(@Valid @RequestBody ProductRequestDTO request) {
         return ResponseEntity
@@ -39,11 +41,13 @@ public class ProductController {
                 .body(service.createProduct(request));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@PathVariable Long id, @RequestBody Product product) {
         return ResponseEntity.ok(service.updateProduct(id, product));
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteProduct(@PathVariable Long id) {
         service.deleteProduct(id);

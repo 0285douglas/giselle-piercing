@@ -1,4 +1,4 @@
-package com.gisellepiercing.application.service;
+package com.gisellepiercing.service;
 
 import com.gisellepiercing.application.exception.ProductNotFoundException;
 import com.gisellepiercing.dto.request.ProductRequestDTO;
