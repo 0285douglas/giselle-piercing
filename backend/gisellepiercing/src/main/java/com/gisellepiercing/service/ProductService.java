@@ -15,14 +15,15 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository repository;
+    private final EmailService emailService;
 
-    public ProductService(ProductRepository repository) {
+    public ProductService(ProductRepository repository, EmailService emailService) {
         this.repository = repository;
+        this.emailService = emailService;
     }
 
     public List<Product> findProducts(String category, String material) {
         log.info("Searching products by category={} and material={}", category, material);
-
         return repository.findProducts(category, material);
     }
 
@@ -32,15 +33,12 @@ public class ProductService {
         return repository.findById(id)
                 .orElseThrow(() -> {
                     log.error("Product not found id={}", id);
-
-                    return new ProductNotFoundException(
-                            "Product not found with id: " + id
-                    );
+                    return new ProductNotFoundException("Product not found with id: " + id);
                 });
     }
 
     public ProductResponseDTO createProduct(ProductRequestDTO request) {
-
+        log.info("Creating product name={}", request.getName());
         Product product = new Product();
 
         product.setName(request.getName());
@@ -49,15 +47,18 @@ public class ProductService {
         product.setImageUrl(request.getImageUrl());
         product.setCategory(request.getCategory());
         product.setMaterial(request.getMaterial());
+        product.setStockQuantity(request.getStockQuantity());
+        product.setMinimumStock(request.getMinimumStock());
 
         Product savedProduct = repository.save(product);
-
+        validateStock(savedProduct);
         return toResponse(savedProduct);
     }
 
     public Product updateProduct(Long id, Product product) {
         log.info("Updating product id={}", id);
         findById(id);
+        validateStock(product);
         return repository.update(id, product);
     }
 
@@ -67,8 +68,14 @@ public class ProductService {
         repository.delete(id);
     }
 
-    private ProductResponseDTO toResponse(Product product) {
+    private void validateStock(Product product) {
+        if (product.getStockQuantity() <= product.getMinimumStock()) {
+            log.warn("Low stock detected product={} quantity={}", product.getName(), product.getStockQuantity());
+            emailService.sendLowStockAlert(product.getName(), product.getStockQuantity());
+        }
+    }
 
+    private ProductResponseDTO toResponse(Product product) {
         return ProductResponseDTO.builder()
                 .id(product.getId())
                 .name(product.getName())
@@ -77,6 +84,8 @@ public class ProductService {
                 .imageUrl(product.getImageUrl())
                 .category(product.getCategory())
                 .material(product.getMaterial())
+                .stockQuantity(product.getStockQuantity())
+                .minimumStock(product.getMinimumStock())
                 .build();
     }
 }

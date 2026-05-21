@@ -12,6 +12,8 @@ public class ProductQuery {
             p.description,
             p.price,
             p.image_url,
+            p.stock_quantity,
+            p.minimum_stock,
             c.name AS category,
             m.name AS material
         FROM store.products p
@@ -42,7 +44,9 @@ public class ProductQuery {
             price,
             image_url,
             category_id,
-            material_id
+            material_id,
+            stock_quantity,
+            minimum_stock
         )
         VALUES
         (
@@ -51,20 +55,10 @@ public class ProductQuery {
             :price,
             :imageUrl,
             :categoryId,
-            :materialId
+            :materialId,
+            :stockQuantity,
+            :minimumStock
         )
-    """;
-
-    public static final String FIND_CATEGORY_ID_BY_NAME = """
-        SELECT id
-        FROM store.categories
-        WHERE LOWER(name) = LOWER(:category)
-    """;
-
-    public static final String FIND_MATERIAL_ID_BY_NAME = """
-        SELECT id
-        FROM store.materials
-        WHERE LOWER(name) = LOWER(:material)
     """;
 
     public static final String FIND_BY_ID = """
@@ -74,11 +68,15 @@ public class ProductQuery {
             p.description,
             p.price,
             p.image_url,
+            p.stock_quantity,
+            p.minimum_stock,
             c.name AS category,
             m.name AS material
         FROM store.products p
-        INNER JOIN store.categories c ON c.id = p.category_id
-        INNER JOIN store.materials m ON m.id = p.material_id
+        INNER JOIN store.categories c
+            ON c.id = p.category_id
+        INNER JOIN store.materials m
+            ON m.id = p.material_id
         WHERE p.id = :id
     """;
 
@@ -90,12 +88,20 @@ public class ProductQuery {
             price = :price,
             image_url = :imageUrl,
             category_id = :categoryId,
-            material_id = :materialId
+            material_id = :materialId,
+            stock_quantity = :stockQuantity,
+            minimum_stock = :minimumStock
         WHERE id = :id
     """;
 
     public static final String DELETE_PRODUCT = """
         DELETE FROM store.products
         WHERE id = :id
+    """;
+
+    public static final String DECREASE_STOCK = """
+        UPDATE store.products
+        SET stock_quantity = stock_quantity - :quantity
+        WHERE id = :productId
     """;
 }

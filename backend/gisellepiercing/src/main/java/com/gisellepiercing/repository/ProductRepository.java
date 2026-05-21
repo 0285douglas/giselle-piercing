@@ -31,13 +31,14 @@ public class ProductRepository {
                 product.setImageUrl(rs.getString("image_url"));
                 product.setCategory(rs.getString("category"));
                 product.setMaterial(rs.getString("material"));
+                product.setStockQuantity(rs.getInt("stock_quantity"));
+                product.setMinimumStock(rs.getInt("minimum_stock"));
 
                 return product;
             };
 
     public List<Product> findProducts(String category, String material) {
         StringBuilder sql = new StringBuilder(ProductQuery.BASE_FIND_PRODUCTS);
-
         MapSqlParameterSource params = new MapSqlParameterSource();
 
         if (category != null && !category.isBlank()) {
@@ -51,7 +52,6 @@ public class ProductRepository {
         }
 
         sql.append(ProductQuery.ORDER_BY);
-
         return jdbcTemplate.query(sql.toString(), params, productRowMapper);
     }
 
@@ -62,52 +62,45 @@ public class ProductRepository {
                         .addValue("price", product.getPrice())
                         .addValue("imageUrl", product.getImageUrl())
                         .addValue("categoryId", Long.parseLong(product.getCategory()))
-                        .addValue("materialId", Long.parseLong(product.getMaterial()));
+                        .addValue("materialId", Long.parseLong(product.getMaterial()))
+                        .addValue("stockQuantity", product.getStockQuantity())
+                        .addValue("minimumStock", product.getMinimumStock());
 
         jdbcTemplate.update(ProductQuery.INSERT_PRODUCT, params);
-
         return product;
     }
 
     public Optional<Product> findById(Long id) {
-
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("id", id);
+                        .addValue("id", id);
 
-        List<Product> products = jdbcTemplate.query(
-                ProductQuery.FIND_BY_ID,
-                params,
-                productRowMapper
-        );
-
+        List<Product> products = jdbcTemplate.query(ProductQuery.FIND_BY_ID, params, productRowMapper);
         return products.stream().findFirst();
     }
 
     public Product update(Long id, Product product) {
 
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("id", id)
-                .addValue("name", product.getName())
-                .addValue("description", product.getDescription())
-                .addValue("price", product.getPrice())
-                .addValue("imageUrl", product.getImageUrl())
-                .addValue("categoryId", Long.parseLong(product.getCategory()))
-                .addValue("materialId", Long.parseLong(product.getMaterial()));
+                        .addValue("id", id)
+                        .addValue("name", product.getName())
+                        .addValue("description", product.getDescription())
+                        .addValue("price", product.getPrice())
+                        .addValue("imageUrl", product.getImageUrl())
+                        .addValue("categoryId", Long.parseLong(product.getCategory()))
+                        .addValue("materialId", Long.parseLong(product.getMaterial()))
+                        .addValue("stockQuantity", product.getStockQuantity())
+                        .addValue("minimumStock", product.getMinimumStock());
 
         jdbcTemplate.update(ProductQuery.UPDATE_PRODUCT, params);
-
         product.setId(id);
-
         return product;
     }
 
     public void delete(Long id) {
-
-        MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("id", id);
+        MapSqlParameterSource params =
+                new MapSqlParameterSource()
+                        .addValue("id", id);
 
         jdbcTemplate.update(ProductQuery.DELETE_PRODUCT, params);
     }
-
-    
 }

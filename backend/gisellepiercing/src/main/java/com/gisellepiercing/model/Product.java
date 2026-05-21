@@ -16,4 +16,6 @@ public class Product {
     private String imageUrl;
     private String category;
     private String material;
+    private Integer stockQuantity;
+    private Integer minimumStock;
 }

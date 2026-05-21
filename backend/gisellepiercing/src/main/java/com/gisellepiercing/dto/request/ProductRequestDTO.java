@@ -3,6 +3,7 @@ package com.gisellepiercing.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.PositiveOrZero;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,4 +31,12 @@ public class ProductRequestDTO {
 
     @NotBlank(message = "Material is required")
     private String material;
+
+    @NotNull
+    @PositiveOrZero
+    private Integer stockQuantity;
+
+    @NotNull
+    @PositiveOrZero
+    private Integer minimumStock;
 }
