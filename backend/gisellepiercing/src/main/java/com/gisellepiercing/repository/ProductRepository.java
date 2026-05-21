@@ -79,7 +79,6 @@ public class ProductRepository {
     }
 
     public Product update(Long id, Product product) {
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                         .addValue("id", id)
                         .addValue("name", product.getName())
@@ -97,10 +96,17 @@ public class ProductRepository {
     }
 
     public void delete(Long id) {
-        MapSqlParameterSource params =
-                new MapSqlParameterSource()
+        MapSqlParameterSource params = new MapSqlParameterSource()
                         .addValue("id", id);
 
         jdbcTemplate.update(ProductQuery.DELETE_PRODUCT, params);
+    }
+
+    public void decreaseStock(Long productId, Integer quantity) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("productId", productId)
+                .addValue("quantity", quantity);
+
+        jdbcTemplate.update(ProductQuery.DECREASE_STOCK, params);
     }
 }

@@ -88,4 +88,17 @@ public class ProductService {
                 .minimumStock(product.getMinimumStock())
                 .build();
     }
+
+    public void decreaseStock(Long productId, Integer quantity) {
+        Product product = findById(productId);
+
+        if (product.getStockQuantity() < quantity) {
+            throw new IllegalArgumentException("Insufficient stock");
+        }
+
+        repository.decreaseStock(productId, quantity);
+        Product updatedProduct = findById(productId);
+        validateStock(updatedProduct);
+        log.info("Stock updated productId={} quantityRemoved={}", productId, quantity);
+    }
 }
