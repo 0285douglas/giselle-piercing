@@ -25,30 +25,43 @@ public class AuthService {
     }
 
     public void register(RegisterRequest request) {
-        log.info("Registering user email={}", request.getEmail());
+        log.info("Iniciando registro do usuário email={}", request.getEmail());
+
+        String cpfLimpo = request.getCpf().replaceAll("[^0-9]", "");
+
+
+        if (repository.existsByEmail(request.getEmail())) {
+            throw new IllegalArgumentException("Este e-mail já está cadastrado no sistema.");
+        }
+
+        if (repository.existsByCpf(cpfLimpo)) {
+            throw new IllegalArgumentException("Este CPF já está cadastrado no sistema.");
+        }
+
         User user = new User();
-        user.setName(request.getName());
+        user.setFirstName(request.getFirstName());
+        user.setLastName(request.getLastName());
         user.setEmail(request.getEmail());
+        user.setCpf(cpfLimpo);
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRole("ROLE_CUSTOMER");
+
         repository.save(user);
+        log.info("Usuário registrado com sucesso! ID gerado no banco.");
     }
 
     public LoginResponse login(LoginRequest request) {
-        log.info("Authenticating user email={}", request.getEmail());
+        log.info("Autenticando usuário email={}", request.getEmail());
+
         User user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+                .orElseThrow(() -> new IllegalArgumentException("E-mail ou senha inválidos."));
 
         boolean passwordMatches = passwordEncoder.matches(request.getPassword(), user.getPassword());
-
         if (!passwordMatches) {
-            throw new RuntimeException("Invalid email or password");
+            throw new IllegalArgumentException("E-mail ou senha inválidos.");
         }
 
-        String token = jwtService.generateToken(user.getEmail(), user.getRole());
-
-        return LoginResponse.builder()
-                .token(token)
-                .build();
+        String token = jwtService.generateToken(user.getId(), user.getEmail(), user.getRole());
+        return LoginResponse.builder().token(token).build();
     }
 }

@@ -2,6 +2,9 @@ spring:
   application:
     name: giselle-piercing-api
 
+  main:
+    banner-mode: "off"
+
   datasource:
     url: jdbc:postgresql://localhost:5432/giselle_piercing_db
     username: postgres
@@ -23,3 +26,19 @@ spring:
 
 server:
   port: 8080
+
+mercado-pago:
+#  access-token: APP_USR-7009698705827422-052211-bb5de8ad052ea36219645ba837906175-169782701
+  access-token: TEST-7009698705827422-052211-cf7c9a3675e60569cf3c18d907a700de-169782701
+
+security:
+  user:
+    name: "dev"
+    password: "dev"
+
+logging:
+  exception-conversion-word: "%wEx{5}"
+  level:
+    org.springframework.web: ERROR
+    org.apache.catalina: ERROR
+    org.hibernate: ERROR

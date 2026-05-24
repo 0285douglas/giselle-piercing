@@ -1,12 +1,11 @@
 package com.gisellepiercing.application.controller;
 
-import com.gisellepiercing.dto.cart.CartItem;
 import com.gisellepiercing.dto.response.CartResponseDTO;
+import com.gisellepiercing.security.CustomAuthenticationToken;
 import com.gisellepiercing.service.CartService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import java.security.Principal;
 
 @RestController
 @RequestMapping("/api/cart")
@@ -20,14 +19,16 @@ public class CartController {
     }
 
     @PostMapping("/items")
-    public ResponseEntity<Void> addItem(@RequestParam Long userId, @RequestParam Long productId, @RequestParam Integer quantity) {
-        service.addItem(userId, productId, quantity);
+    public ResponseEntity<Void> addItem(@RequestParam Long productId, @RequestParam Integer quantity, Principal principal) {
+        CustomAuthenticationToken auth = (CustomAuthenticationToken) principal;
+        service.addItem(auth.getUserId(), productId, quantity);
         return ResponseEntity.ok().build();
     }
 
     @GetMapping
-    public ResponseEntity<CartResponseDTO> getCart(@RequestParam Long userId) {
-        return ResponseEntity.ok(service.getCart(userId));
+    public ResponseEntity<CartResponseDTO> getCart(Principal principal) {
+        CustomAuthenticationToken auth = (CustomAuthenticationToken) principal;
+        return ResponseEntity.ok(service.getCart(auth.getUserId()));
     }
 
     @DeleteMapping("/items/{id}")

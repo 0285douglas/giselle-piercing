@@ -43,4 +43,12 @@ public class OrderRepository {
 
         jdbcTemplate.update(OrderQuery.CLEAR_CART, params);
     }
+
+    public void updateStatus(Long orderId, String status) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("orderId", orderId)
+                .addValue("status", status);
+
+        jdbcTemplate.update(OrderQuery.UPDATE_ORDER_STATUS, params);
+    }
 }

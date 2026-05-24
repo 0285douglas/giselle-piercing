@@ -21,31 +21,30 @@ public class UserRepository {
 
     private final RowMapper<User> userRowMapper =
             (rs, rowNum) -> {
-
                 User user = new User();
-
                 user.setId(rs.getLong("id"));
-                user.setName(rs.getString("name"));
+                user.setFirstName(rs.getString("first_name"));
+                user.setLastName(rs.getString("last_name"));
                 user.setEmail(rs.getString("email"));
                 user.setPassword(rs.getString("password"));
+                user.setCpf(rs.getString("cpf"));
                 user.setRole(rs.getString("role"));
-
                 return user;
             };
 
     public void save(User user) {
-
         MapSqlParameterSource params = new MapSqlParameterSource()
-                .addValue("name", user.getName())
+                .addValue("firstName", user.getFirstName())
+                .addValue("lastName", user.getLastName())
                 .addValue("email", user.getEmail())
                 .addValue("password", user.getPassword())
+                .addValue("cpf", user.getCpf())
                 .addValue("role", user.getRole());
 
         jdbcTemplate.update(UserQuery.INSERT_USER, params);
     }
 
     public Optional<User> findByEmail(String email) {
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("email", email);
 
@@ -56,5 +55,22 @@ public class UserRepository {
         );
 
         return users.stream().findFirst();
+    }
+
+    // Novo método necessário para o AuthService validar e-mails duplicados
+    public boolean existsByEmail(String email) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("email", email);
+
+        Integer count = jdbcTemplate.queryForObject(UserQuery.EXISTS_BY_EMAIL, params, Integer.class);
+        return count != null && count > 0;
+    }
+
+    public boolean existsByCpf(String cpf) {
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("cpf", cpf);
+
+        Integer count = jdbcTemplate.queryForObject(UserQuery.EXISTS_BY_CPF, params, Integer.class);
+        return count != null && count > 0;
     }
 }

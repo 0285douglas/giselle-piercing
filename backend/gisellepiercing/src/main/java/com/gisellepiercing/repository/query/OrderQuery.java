@@ -40,4 +40,10 @@ public class OrderQuery {
         DELETE FROM store.cart_items
         WHERE cart_id = :cartId
     """;
+
+    public static final String UPDATE_ORDER_STATUS = """
+        UPDATE store.orders
+        SET status = :status
+        WHERE id = :orderId
+    """;
 }

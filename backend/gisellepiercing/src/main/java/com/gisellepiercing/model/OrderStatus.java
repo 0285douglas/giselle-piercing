@@ -1,7 +1,7 @@
 package com.gisellepiercing.model;
 
 public enum OrderStatus {
-    PENDING,
+    WAITING_PAYMENT,
     PAID,
     CANCELLED
 }
