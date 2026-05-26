@@ -59,4 +59,9 @@ public class CartQuery {
             ON p.id = ci.product_id
         WHERE ci.cart_id = :cartId
     """;
+
+    public static final String CLEAR_CART_ITEMS = """
+        DELETE FROM store.cart_items
+        WHERE cart_id = :cartId
+    """;
 }

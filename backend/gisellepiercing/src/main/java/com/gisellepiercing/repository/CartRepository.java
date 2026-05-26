@@ -109,4 +109,15 @@ public class CartRepository {
                 }
         );
     }
+
+    public void clearCart(Long cartId) {
+
+        MapSqlParameterSource params = new MapSqlParameterSource()
+                .addValue("cartId", cartId);
+
+        jdbcTemplate.update(
+                CartQuery.CLEAR_CART_ITEMS,
+                params
+        );
+    }
 }

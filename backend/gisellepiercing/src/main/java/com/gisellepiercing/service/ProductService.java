@@ -16,10 +16,12 @@ public class ProductService {
 
     private final ProductRepository repository;
     private final EmailService emailService;
+    private final WhatsAppService whatsAppService;
 
-    public ProductService(ProductRepository repository, EmailService emailService) {
+    public ProductService(ProductRepository repository, EmailService emailService, WhatsAppService whatsAppService) {
         this.repository = repository;
         this.emailService = emailService;
+        this.whatsAppService = whatsAppService;
     }
 
     public List<Product> findProducts(String category, String material) {
@@ -72,6 +74,7 @@ public class ProductService {
         if (product.getStockQuantity() <= product.getMinimumStock()) {
             log.warn("Low stock detected product={} quantity={}", product.getName(), product.getStockQuantity());
             emailService.sendLowStockAlert(product.getName(), product.getStockQuantity());
+            whatsAppService.sendLowStockAlert(product.getName(), product.getStockQuantity());
         }
     }
 

@@ -52,4 +52,22 @@ public class OrderQuery {
         SET status = :status
         WHERE id = :orderId
     """;
+
+    public static final String FIND_ITEMS_BY_ORDER_ID = """
+        SELECT
+            id,
+            order_id,
+            product_id,
+            product_name,
+            price,
+            quantity
+        FROM store.order_items
+        WHERE order_id = :orderId
+    """;
+
+    public static final String FIND_USER_ID_BY_ORDER_ID = """
+        SELECT user_id
+        FROM store.orders
+        WHERE id = :orderId
+    """;
 }

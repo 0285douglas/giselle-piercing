@@ -13,7 +13,7 @@
     <artifactId>api</artifactId>
     <version>0.0.2</version>
     <name>giselle-piercing-api</name>
-    <description>Backend para E-commerce Giselle Piercing</description>
+    <description>Backend para E-commerce Giselle Piercing Store</description>
 
     <properties>
         <java.version>21</java.version>
