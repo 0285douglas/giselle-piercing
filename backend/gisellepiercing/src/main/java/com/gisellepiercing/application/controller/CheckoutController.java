@@ -1,9 +1,10 @@
 package com.gisellepiercing.application.controller;
 
 import com.gisellepiercing.dto.request.CheckoutRequestDTO;
-import com.gisellepiercing.dto.response.CheckoutResponseDTO;
 import com.gisellepiercing.security.CustomAuthenticationToken;
 import com.gisellepiercing.service.CheckoutService;
+import com.mercadopago.resources.payment.Payment;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.security.Principal;
@@ -13,15 +14,16 @@ import java.security.Principal;
 @CrossOrigin(origins = "*")
 public class CheckoutController {
 
-    private final CheckoutService service;
+    private final CheckoutService checkoutService;
 
-    public CheckoutController(CheckoutService service) {
-        this.service = service;
+    public CheckoutController(CheckoutService checkoutService) {
+        this.checkoutService = checkoutService;
     }
 
     @PostMapping
-    public ResponseEntity<CheckoutResponseDTO> checkout(@RequestBody CheckoutRequestDTO request, Principal principal) throws Exception {
+    public ResponseEntity<Payment> checkout(@Valid @RequestBody CheckoutRequestDTO dto, Principal principal) {
         CustomAuthenticationToken auth = (CustomAuthenticationToken) principal;
-        return ResponseEntity.ok(service.checkout(auth.getUserId(), auth.getName(), request));
+        Payment payment = checkoutService.processarCheckout(auth.getUserId(), auth.getName(), dto);
+        return ResponseEntity.ok(payment);
     }
 }

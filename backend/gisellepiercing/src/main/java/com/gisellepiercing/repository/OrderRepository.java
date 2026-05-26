@@ -17,10 +17,12 @@ public class OrderRepository {
     }
 
     public Long createOrder(Order order) {
-
         MapSqlParameterSource params = new MapSqlParameterSource()
                 .addValue("userId", order.getUserId())
                 .addValue("total", order.getTotal())
+                .addValue("paymentMethod", order.getPaymentMethod())
+                .addValue("mercadoPagoId", order.getMercadoPagoId())
+                .addValue("paymentUrl", order.getPaymentUrl())
                 .addValue("status", order.getStatus().name());
 
         return jdbcTemplate.queryForObject(OrderQuery.CREATE_ORDER, params, Long.class);

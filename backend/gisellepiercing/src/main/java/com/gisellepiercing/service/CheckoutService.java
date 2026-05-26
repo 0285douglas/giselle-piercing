@@ -1,53 +1,110 @@
 package com.gisellepiercing.service;
 
 import com.gisellepiercing.dto.request.CheckoutRequestDTO;
-import com.gisellepiercing.dto.response.CartItemResponseDTO;
 import com.gisellepiercing.dto.response.CartResponseDTO;
-import com.gisellepiercing.dto.response.CheckoutResponseDTO;
+import com.gisellepiercing.dto.response.CartItemResponseDTO;
 import com.gisellepiercing.model.Order;
 import com.gisellepiercing.model.OrderStatus;
-import com.gisellepiercing.model.PaymentMethod;
+import com.gisellepiercing.model.User;
+import com.gisellepiercing.repository.UserRepository;
 import com.gisellepiercing.repository.OrderRepository;
+import com.mercadopago.client.common.IdentificationRequest;
+import com.mercadopago.client.payment.PaymentClient;
+import com.mercadopago.client.payment.PaymentCreateRequest;
+import com.mercadopago.client.payment.PaymentPayerRequest;
 import com.mercadopago.resources.payment.Payment;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @Slf4j
 public class CheckoutService {
 
-    private final CartService cartService;
+    private final UserRepository userRepository;
     private final OrderRepository orderRepository;
-    private final MercadoPagoService mercadoPagoService;
+    private final CartService cartService;
 
-    public CheckoutService(CartService cartService, OrderRepository orderRepository, MercadoPagoService mercadoPagoService) {
-        this.cartService = cartService;
+    public CheckoutService(UserRepository userRepository, OrderRepository orderRepository, CartService cartService) {
+        this.userRepository = userRepository;
         this.orderRepository = orderRepository;
-        this.mercadoPagoService = mercadoPagoService;
+        this.cartService = cartService;
     }
 
-    public CheckoutResponseDTO checkout(Long userId, String email, CheckoutRequestDTO request) throws Exception {
+    @Transactional
+    public Payment processarCheckout(Long userId, String userEmail, CheckoutRequestDTO dto) {
+        log.info("Processando checkout de metodo={} para o usuarioId={}", dto.getPaymentMethod(), userId);
+
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new IllegalArgumentException("Usuario nao encontrado"));
+
         CartResponseDTO cart = cartService.getCart(userId);
-        Order order = new Order();
-        order.setUserId(userId);
-        order.setTotal(cart.getTotal());
-        order.setStatus(OrderStatus.WAITING_PAYMENT);
-        Long orderId = orderRepository.createOrder(order);
-        for (CartItemResponseDTO item : cart.getItems()) {
-            orderRepository.createOrderItem(orderId, item);
+        if (cart.getItems().isEmpty()) {
+            throw new IllegalArgumentException("O carrinho esta vazio");
         }
-        Payment payment = mercadoPagoService.createPayment(orderId, cart.getTotal(), email, request.getPaymentMethod());
-        String qrCode = null;
-        String qrCodeBase64 = null;
-        String boletoUrl = null;
-        if (request.getPaymentMethod() == PaymentMethod.PIX) {
-            qrCode = payment.getPointOfInteraction().getTransactionData().getQrCode();
-            qrCodeBase64 = payment.getPointOfInteraction().getTransactionData().getQrCodeBase64();
+
+        PaymentPayerRequest payerRequest = PaymentPayerRequest.builder()
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .identification(IdentificationRequest.builder()
+                        .type("CPF")
+                        .number(user.getCpf())
+                        .build())
+                .build();
+
+        PaymentCreateRequest.PaymentCreateRequestBuilder requestBuilder = PaymentCreateRequest.builder()
+                .transactionAmount(cart.getTotal())
+                .description("Pedido Giselle Piercing")
+                .payer(payerRequest);
+
+        String type = dto.getPaymentMethod().toUpperCase();
+        switch (type) {
+            case "PIX" -> requestBuilder.paymentMethodId("pix");
+            case "BOLETO" -> requestBuilder.paymentMethodId("bolbradesco");
+            case "CREDIT_CARD" -> {
+                if (dto.getToken() == null || dto.getInstallments() == null) {
+                    throw new IllegalArgumentException("Dados de cartao ausentes");
+                }
+                requestBuilder.paymentMethodId(dto.getPaymentMethodId().toLowerCase())
+                        .token(dto.getToken())
+                        .installments(dto.getInstallments());
+            }
+            default -> throw new IllegalArgumentException("Metodo indisponivel");
         }
-        if (request.getPaymentMethod() == PaymentMethod.BOLETO) {
-            boletoUrl = payment.getTransactionDetails().getExternalResourceUrl();
+
+        try {
+            PaymentClient client = new PaymentClient();
+            Payment payment = client.create(requestBuilder.build());
+
+            String paymentUrl = null;
+            if (type.equals("PIX") && payment.getPointOfInteraction() != null && payment.getPointOfInteraction().getTransactionData() != null) {
+                paymentUrl = payment.getPointOfInteraction().getTransactionData().getQrCode();
+            } else if (type.equals("BOLETO") && payment.getTransactionDetails() != null) {
+                paymentUrl = payment.getTransactionDetails().getExternalResourceUrl();
+            }
+
+            Order order = new Order();
+            order.setUserId(userId);
+            order.setTotal(cart.getTotal());
+            order.setPaymentMethod(type);
+            order.setMercadoPagoId(payment.getId().toString());
+            order.setPaymentUrl(paymentUrl);
+            order.setStatus(OrderStatus.PENDING);
+
+            Long orderId = orderRepository.createOrder(order);
+
+            for (CartItemResponseDTO item : cart.getItems()) {
+                orderRepository.createOrderItem(orderId, item);
+            }
+
+            orderRepository.clearCart(cart.getCartId());
+            log.info("Pedido gerado id={} com sucesso", orderId);
+
+            return payment;
+        } catch (Exception e) {
+            log.error("Erro ao integrar com o Mercado Pago", e);
+            throw new RuntimeException("Falha na operacao de pagamento: " + e.getMessage());
         }
-        log.info("Payment created orderId={} method={}", orderId, request.getPaymentMethod());
-        return CheckoutResponseDTO.builder().orderId(orderId).qrCode(qrCode).qrCodeBase64(qrCodeBase64).boletoUrl(boletoUrl).status(payment.getStatus()).build();
     }
 }

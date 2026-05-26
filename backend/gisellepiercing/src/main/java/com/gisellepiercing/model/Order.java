@@ -15,5 +15,8 @@ public class Order {
     private Long id;
     private Long userId;
     private BigDecimal total;
+    private String paymentMethod;
+    private String mercadoPagoId;
+    private String paymentUrl;
     private OrderStatus status;
 }

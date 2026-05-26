@@ -10,10 +10,16 @@ public class OrderQuery {
         (
             user_id,
             total,
+            payment_method,
+            mercado_pago_id,
+            payment_url,
             status
         ) VALUES (
             :userId,
             :total,
+            :paymentMethod,
+            :mercadoPagoId,
+            :paymentUrl,
             :status
         )
         RETURNING id
