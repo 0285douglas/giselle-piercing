@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: giselle-piercing-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/giselle_piercing_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+
+  autoconfigure:
+    exclude:
+      - org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: 0285douglas@gmail.com
+    password: yzoxlmgpqflyvnae
+    protocol: smtp
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+server:
+  port: 8080
+
+mercado-pago:
+  access-token: TEST-7009698705827422-052211-cf7c9a3675e60569cf3c18d907a700de-169782701
+
+logging:
+  exception-conversion-word: "%wEx{5}"
+  level:
+    org.springframework.web: ERROR
+    org.apache.catalina: ERROR
+    org.hibernate: ERROR
+    org.springframework.boot: WARN
+    org.springframework.security: ERROR
+
+zapi:
+  instance-id: 3F3B6D760A6C82F57F1EEE4FD013274E
+  token: 3C94DA5F16578E5276DBEED0
+  client-token: Ff3434bcc30bf49288c43a6707487b831S
+  phone: 5513997723285
