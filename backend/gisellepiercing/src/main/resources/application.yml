@@ -28,12 +28,18 @@ spring:
 server:
   port: 8080
 
+# Configuração JWT
+app:
+  jwt:
+    secret: ${JWT_SECRET_KEY:my-secret-key-my-secret-key-my-secret-key-production-size-needed}
+
 mercado-pago:
   access-token: TEST-7009698705827422-052211-cf7c9a3675e60569cf3c18d907a700de-169782701
 
 logging:
   exception-conversion-word: "%wEx{5}"
   level:
+    com.gisellepiercing: INFO
     org.springframework.web: ERROR
     org.apache.catalina: ERROR
     org.hibernate: ERROR
@@ -45,3 +51,6 @@ zapi:
   token: 3C94DA5F16578E5276DBEED0
   client-token: Ff3434bcc30bf49288c43a6707487b831S
   phone: 5513997723285
+
+  # application, payymentwebhookservice,jwtservice, checkoutservice 
+

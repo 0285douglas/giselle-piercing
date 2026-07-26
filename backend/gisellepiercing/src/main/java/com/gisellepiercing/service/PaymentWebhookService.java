@@ -1,5 +1,7 @@
 package com.gisellepiercing.service;
 
+import com.gisellepiercing.application.exception.OrderNotFoundException;
+import com.gisellepiercing.application.exception.PaymentProcessingException;
 import com.gisellepiercing.model.OrderItem;
 import com.gisellepiercing.model.OrderStatus;
 import com.gisellepiercing.repository.OrderRepository;
@@ -28,19 +30,25 @@ public class PaymentWebhookService {
         this.cartService = cartService;
     }
 
+    /**
+     * Processa webhook de pagamento do Mercado Pago
+     */
     public void processPayment(Long paymentId) throws Exception {
+
+        log.info("Webhook recebido - paymentId={}", paymentId);
 
         PaymentClient client = new PaymentClient();
 
         Payment payment = client.get(paymentId);
 
         log.info(
-                "Webhook received paymentId={} status={}",
+                "Webhook processado - paymentId={} status={}",
                 paymentId,
                 payment.getStatus()
         );
 
         if (!"approved".equals(payment.getStatus())) {
+            log.info("Pagamento não aprovado, não processando pedido - paymentId={} status={}", paymentId, payment.getStatus());
             return;
         }
 
@@ -50,43 +58,54 @@ public class PaymentWebhookService {
         processApprovedOrder(orderId);
     }
 
-    // Endpoint para simular pagamento aprovado (apenas para testes)
+    /**
+     * Simula pagamento aprovado para testes (apenas para desenvolvimento)
+     */
     public void simulateApprovedPayment(Long orderId) {
 
         log.info(
-                "Simulating approved payment orderId={}",
+                "Simulando pagamento aprovado - orderId={}",
                 orderId
         );
 
         processApprovedOrder(orderId);
     }
 
+    /**
+     * Processa pedido aprovado: atualiza status, reduz estoque e limpa carrinho
+     */
     private void processApprovedOrder(Long orderId) {
 
-        orderRepository.updateStatus(
-                orderId,
-                OrderStatus.PAID.name()
-        );
-
-        List<OrderItem> items =
-                orderRepository.findItemsByOrderId(orderId);
-
-        for (OrderItem item : items) {
-
-            productService.decreaseStock(
-                    item.getProductId(),
-                    item.getQuantity()
+        try {
+            orderRepository.updateStatus(
+                    orderId,
+                    OrderStatus.PAID.name()
             );
+
+            List<OrderItem> items =
+                    orderRepository.findItemsByOrderId(orderId);
+
+            for (OrderItem item : items) {
+
+                productService.decreaseStock(
+                        item.getProductId(),
+                        item.getQuantity()
+                );
+            }
+
+            Long userId =
+                    orderRepository.findUserIdByOrderId(orderId);
+
+            cartService.clearCartByUserId(userId);
+
+            log.info(
+                    "Pedido processado com sucesso - orderId={} estoque_atualizado=true carrinho_limpo=true",
+                    orderId
+            );
+
+        } catch (Exception e) {
+            log.error("Erro ao processar pedido aprovado - orderId={}", orderId, e);
+            throw new PaymentProcessingException("Erro ao processar pagamento aprovado", e);
         }
-
-        Long userId =
-                orderRepository.findUserIdByOrderId(orderId);
-
-        cartService.clearCartByUserId(userId);
-
-        log.info(
-                "Order approved orderId={} stockUpdated=true cartCleared=true",
-                orderId
-        );
     }
 }

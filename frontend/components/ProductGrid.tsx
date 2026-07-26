@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShoppingCart, Award } from "lucide-react";
 import { useApp, Product } from "@/context/AppContext";
+import api from "@/lib/api";
 
 export default function ProductGrid() {
 
@@ -47,38 +48,20 @@ export default function ProductGrid() {
       );
     }
 
-    const url =
-      `http://localhost:8080/api/products?${params.toString()}`;
-
     const timer = setTimeout(() => {
-
-      fetch(url, {
-        cache: "no-store",
-      })
-        .then((response) => {
-
-          if (!response.ok) {
-
-            throw new Error(
-              "Erro ao buscar produtos"
-            );
-          }
-
-          return response.json();
-        })
-        .then((data: Product[]) => {
-          setProducts(data);
+      api
+        .getProducts(Object.fromEntries(params.entries()))
+        .then((data: any[]) => {
+          const parsed = (data || []).map((p: any) => ({
+            ...p,
+            price: Number(p.price),
+          }));
+          setProducts(parsed as Product[]);
         })
         .catch((error) => {
-
-          console.error(
-            "Erro ao conectar com API:",
-            error
-          );
+          console.error("Erro ao conectar com API:", error);
         })
-        .finally(() => {
-          setLoading(false);
-        });
+        .finally(() => setLoading(false));
 
     }, 400);
 

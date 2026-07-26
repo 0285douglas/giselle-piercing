@@ -1,18 +1,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useApp } from "@/context/AppContext";
+import { useApp, Product } from "@/context/AppContext";
 import { ShoppingCart } from "lucide-react";
-
-interface Product {
-  id: number;
-  name: string;
-  description: string;
-  material: string;
-  category: string;
-  price: number;
-  imageUrl: string;
-}
+import api from "@/lib/api";
 
 const hotspots = [
   {
@@ -79,43 +70,19 @@ export default function AnatomyView() {
     setLoading(true);
 
     const params = new URLSearchParams();
+    params.append("category", selectedPart as string);
+    params.append("material", activeMaterial);
 
-    params.append(
-      "category",
-      selectedPart
-    );
-
-    params.append(
-      "material",
-      activeMaterial
-    );
-
-    fetch(
-      `http://localhost:8080/api/products?${params.toString()}`
-    )
-      .then((response) => {
-
-        if (!response.ok) {
-          throw new Error(
-            "Erro ao buscar produtos"
-          );
-        }
-
-        return response.json();
-      })
-      .then((data: Product[]) => {
-        setProducts(data);
+    api
+      .getProducts(Object.fromEntries(params.entries()))
+      .then((data: any[]) => {
+        const mapped = (data || []).map((p: any) => ({ ...p, price: Number(p.price) }));
+        setProducts(mapped as Product[]);
       })
       .catch((error) => {
-
-        console.error(
-          "Erro ao carregar anatomia:",
-          error
-        );
+        console.error("Erro ao carregar anatomia:", error);
       })
-      .finally(() => {
-        setLoading(false);
-      });
+      .finally(() => setLoading(false));
 
   }, [
     selectedPart,
